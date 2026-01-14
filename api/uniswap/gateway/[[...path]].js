@@ -1,7 +1,11 @@
 export default async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Vary", "Origin");
     res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "*");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      req.headers["access-control-request-headers"] || "Content-Type,Authorization"
+    );
     if (req.method === "OPTIONS") return res.status(204).end();
   
     const parts = Array.isArray(req.query.path) ? req.query.path : [];
