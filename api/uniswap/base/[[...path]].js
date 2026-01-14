@@ -33,6 +33,7 @@ export default async function handler(req, res) {
       });
   
       const text = await upstreamResp.text();
+      res.setHeader("Content-Type", "application/json");
       return res.status(upstreamResp.status).send(text);
     } catch (e) {
       return res.status(502).json({ error: "Upstream fetch failed", detail: String(e) });

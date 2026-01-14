@@ -25,6 +25,10 @@ export default async function handler(req, res) {
     try {
       const headers = { origin: "http://localhost:3000" };
       if (req.method === "POST") headers["content-type"] = "application/json";
+
+      console.log('endpoints: ', upstream)
+      console.log("req.body: ", req.body)
+      console.log("JSON.stringify(req.body ?? {}): ", JSON.stringify(req.body ?? {}))
   
       const upstreamResp = await fetch(upstream, {
         method: req.method,
@@ -33,6 +37,7 @@ export default async function handler(req, res) {
       });
   
       const text = await upstreamResp.text();
+      res.setHeader("Content-Type", "application/json");
       return res.status(upstreamResp.status).send(text);
     } catch (e) {
       return res.status(502).json({ error: "Upstream fetch failed", detail: String(e) });
