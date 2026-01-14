@@ -25,15 +25,11 @@ export default async function handler(req, res) {
     try {
       const headers = { origin: "http://localhost:3000" };
       if (req.method === "POST") headers["content-type"] = "application/json";
-
-      console.log('endpoints: ', upstream)
-      console.log("req.body: ", req.body)
-      console.log("JSON.stringify(req.body ?? {}): ", JSON.stringify(req.body ?? {}))
   
       const upstreamResp = await fetch(upstream, {
         method: req.method,
         headers,
-        body: req.method === "POST" ? req.body : undefined,
+        body: req.method === "POST" ? JSON.stringify(req.body ?? {}) : undefined,
       });
   
       const text = await upstreamResp.text();
