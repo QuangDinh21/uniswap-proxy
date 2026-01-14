@@ -22,8 +22,6 @@ export default async function handler(req, res) {
   
     const upstream = `https://interface.gateway.uniswap.org/v2${restPath}${cleanQuery}`;
   
-    console.log("ENDPOINT:", upstream); // For debugging
-  
     try {
       const headers = { origin: "http://localhost:3000" };
       if (req.method === "POST") headers["content-type"] = "application/json";

@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-    // CORS
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Vary", "Origin");
     res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
@@ -9,13 +8,19 @@ export default async function handler(req, res) {
     );
     if (req.method === "OPTIONS") return res.status(204).end();
   
-    const parts = Array.isArray(req.query.path) ? req.query.path : [];
-    const restPath = parts.length ? `/${parts.join("/")}` : "";
+    // Parse URL directly instead of relying on req.query.path
+    const url = req.url || "";
   
-    const queryIndex = (req.url || "").indexOf("?");
-    const queryString = queryIndex >= 0 ? (req.url || "").slice(queryIndex) : "";
+    // Remove the /api/uniswap/base prefix to get the rest
+    const match = url.match(/^\/api\/uniswap\/base(\/[^?]*)?(\?.*)?$/);
   
-    const upstream = `https://interface.gateway.uniswap.org${restPath}${queryString}`;
+    const restPath = match?.[1] || "";
+    const queryString = match?.[2] || "";
+  
+    // Remove [...path] from query string if it leaked in
+    const cleanQuery = queryString.replace(/&?\[\.\.\.path\]=[^&]*/g, "").replace(/^\?&/, "?");
+  
+    const upstream = `https://interface.gateway.uniswap.org${restPath}${cleanQuery}`;
   
     try {
       const headers = { origin: "http://localhost:3000" };
