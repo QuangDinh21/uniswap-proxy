@@ -1,10 +1,10 @@
 export const config = { runtime: "nodejs" };
 
 function applyCors(req, res) {
-  const origin = req.headers.origin || "*";
-  res.setHeader("Access-Control-Allow-Origin", origin);
+  res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
 
   const reqHeaders = req.headers["access-control-request-headers"];
   res.setHeader(
@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     const upstreamResp = await fetch("https://interface.gateway.uniswap.org/v1/graphql", {
       method: "POST",
       headers: {
-        origin: "http://localhost:3000", // your requirement (upstream request header)
+        origin: "http://localhost:3000",
         "content-type": "application/json",
       },
       body: JSON.stringify(req.body ?? {}),
