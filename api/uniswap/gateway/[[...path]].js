@@ -13,6 +13,9 @@ export default async function handler(req, res) {
   
     const queryIndex = (req.url || "").indexOf("?");
     const queryString = queryIndex >= 0 ? (req.url || "").slice(queryIndex) : "";
+
+    console.log('restPath: ', restPath)
+    console.log('queryString: ', queryString)
   
     const upstream = `https://interface.gateway.uniswap.org/v2${restPath}${queryString}`;
 
