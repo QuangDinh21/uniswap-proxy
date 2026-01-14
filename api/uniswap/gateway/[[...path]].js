@@ -15,10 +15,14 @@ export default async function handler(req, res) {
     const queryString = queryIndex >= 0 ? (req.url || "").slice(queryIndex) : "";
   
     const upstream = `https://interface.gateway.uniswap.org/v2${restPath}${queryString}`;
+
+    console.log("ENDPOINT: ", upstream)
   
     try {
       const headers = { origin: "http://localhost:3000" };
       if (req.method === "POST") headers["content-type"] = "application/json";
+
+      console.log('headers: ', headers)
   
       const upstreamResp = await fetch(upstream, {
         method: req.method,
