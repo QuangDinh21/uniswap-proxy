@@ -8,24 +8,25 @@ export default async function handler(req, res) {
     );
     if (req.method === "OPTIONS") return res.status(204).end();
   
-    const parts = Array.isArray(req.query.path) ? req.query.path : [];
-    const restPath = parts.length ? `/${parts.join("/")}` : "";
+    // Parse URL directly instead of relying on req.query.path
+    const url = req.url || "";
+    
+    // Remove the /api/uniswap/gateway prefix to get the rest
+    const match = url.match(/^\/api\/uniswap\/gateway(\/[^?]*)?(\?.*)?$/);
+    
+    const restPath = match?.[1] || "";  // e.g., "/quickroute"
+    const queryString = match?.[2] || ""; // e.g., "?tokenInChainId=1&..."
+    
+    // Remove [...path] from query string if it leaked in
+    const cleanQuery = queryString.replace(/&?\[\.\.\.path\]=[^&]*/g, "").replace(/^\?&/, "?");
   
-    const queryIndex = (req.url || "").indexOf("?");
-    const queryString = queryIndex >= 0 ? (req.url || "").slice(queryIndex) : "";
-
-    console.log('restPath: ', restPath)
-    console.log('queryString: ', queryString)
+    const upstream = `https://interface.gateway.uniswap.org/v2${restPath}${cleanQuery}`;
   
-    const upstream = `https://interface.gateway.uniswap.org/v2${restPath}${queryString}`;
-
-    console.log("ENDPOINT: ", upstream)
+    console.log("ENDPOINT:", upstream); // For debugging
   
     try {
       const headers = { origin: "http://localhost:3000" };
       if (req.method === "POST") headers["content-type"] = "application/json";
-
-      console.log('headers: ', headers)
   
       const upstreamResp = await fetch(upstream, {
         method: req.method,
