@@ -8,27 +8,26 @@ export default async function handler(req, res) {
     );
     if (req.method === "OPTIONS") return res.status(204).end();
   
-    // Parse URL directly instead of relying on req.query.path
+    // Parse URL directly
     const url = req.url || "";
-    
-    // Remove the /api/uniswap/gateway prefix to get the rest
-    const match = url.match(/^\/api\/uniswap\/gateway(\/[^?]*)?(\?.*)?$/);
-    
-    const restPath = match?.[1] || "";  // e.g., "/quickroute"
-    const queryString = match?.[2] || ""; // e.g., "?tokenInChainId=1&..."
-    
-    // Remove [...path] from query string if it leaked in
-    const cleanQuery = queryString.replace(/&?\[\.\.\.path\]=[^&]*/g, "").replace(/^\?&/, "?");
   
-    const upstream = `https://interface.gateway.uniswap.org/v2${restPath}${cleanQuery}`;
+    // Split path and query
+    const [pathPart, queryPart] = url.split("?");
+  
+    // Extract everything after /api/uniswap/base
+    const restPath = pathPart.replace(/^\/?api\/uniswap\/base\/?/, "/").replace(/^\/$/, "");
+  
+    // Clean query string - remove [...path] leak
+    let cleanQuery = queryPart ? `?${queryPart}` : "";
+    cleanQuery = cleanQuery.replace(/&?\[\.\.\.path\]=[^&]*/g, "").replace(/^\?&/, "?").replace(/^\?$/, "");
+  
+    const upstream = `https://interface.gateway.uniswap.org${restPath}${cleanQuery}`;
+  
+    console.log("ENDPOINT:", upstream);
   
     try {
       const headers = { origin: "http://localhost:3000" };
       if (req.method === "POST") headers["content-type"] = "application/json";
-
-      console.log('endpoints: ', upstream)
-      console.log("req.body: ", req.body)
-      console.log("JSON.stringify(req.body ?? {}): ", JSON.stringify(req.body ?? {}))
   
       const upstreamResp = await fetch(upstream, {
         method: req.method,
@@ -37,7 +36,6 @@ export default async function handler(req, res) {
       });
   
       const text = await upstreamResp.text();
-      res.setHeader("Content-Type", "application/json");
       return res.status(upstreamResp.status).send(text);
     } catch (e) {
       return res.status(502).json({ error: "Upstream fetch failed", detail: String(e) });
